@@ -1,0 +1,30 @@
+{
+  "name": "mina-tools",
+  "version": "0.1.0",
+  "description": "Tools for mina apps",
+  "main": "dist/index.js",
+  "author": "erguotou525@gmail.com",
+  "license": "MIT",
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "bin": {
+    "minat": "./bin/minat.js"
+  },
+  "scripts": {
+    "#lint": "tslint --project . ./**/*.ts",
+    "build": "tsc -p .",
+    "prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^14.6.2"
+  },
+  "dependencies": {
+    "@types/minimist": "^1.2.0",
+    "minimist": "^1.2.5"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
+}
