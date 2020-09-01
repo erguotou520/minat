@@ -1,5 +1,5 @@
 {
-  "name": "mina-tools",
+  "name": "minat",
   "version": "0.1.0",
   "description": "Tools for mina apps",
   "main": "dist/index.js",
@@ -15,7 +15,7 @@
   "scripts": {
     "#lint": "tslint --project . ./**/*.ts",
     "build": "tsc -p .",
-    "prepublish": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^14.6.2"
