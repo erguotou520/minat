@@ -1,9 +1,8 @@
-import fs from 'fs'
-import path, { resolve } from 'path'
-import os from 'os'
-import { promisify } from 'util'
-import { spawn } from 'child_process'
-import { Args } from './args'
+import { spawn } from 'node:child_process'
+import fs from 'node:fs'
+import path, { resolve } from 'node:path'
+import { promisify } from 'node:util'
+import type { Args } from './args'
 
 interface UploadArgs {
   projectPath: string
@@ -21,7 +20,7 @@ interface PackageInfo {
 const currentDir = process.cwd()
 
 // 上传后保存json位置
-// const outputFolder = os.tmpdir();
+// const outputFolder = os.tmpdir()
 
 // 命令行工具
 let cliPath: string
@@ -35,8 +34,8 @@ export async function getCliPath() {
   // 默认路径
   cliPath =
     process.platform === 'darwin'
-      ? `/Applications/wechatwebdevtools.app`
-      : `C:\\Program Files (x86)\\Tencent\\微信web开发者工具`
+      ? '/Applications/wechatwebdevtools.app'
+      : 'C:\\Program Files (x86)\\Tencent\\微信web开发者工具'
   // 环境变量覆盖
   const envCliPath = process.env.WECHAT_MINAPP_DEVTOOL_PATH
   if (envCliPath) {
@@ -67,24 +66,27 @@ export async function getCliPath() {
 export async function canFolderUpload(folder: string) {
   const jsonPath = resolve(folder, 'app.json')
   const jsPath = resolve(folder, 'app.js')
-  if ((await promisify(fs.exists)(jsonPath)) && (await promisify(fs.exists)(jsPath))) {
+  if (
+    (await promisify(fs.exists)(jsonPath)) &&
+    (await promisify(fs.exists)(jsPath))
+  ) {
     return true
   }
   return false
 }
 
 // 获取默认的上传的项目路径
-async function getDefaultProjectPath(): Promise<string | undefined> {
-  const distFolder = resolve(currentDir, 'dist')
-  if (await promisify(fs.exists)(distFolder)) {
-    if (await canFolderUpload(distFolder)) {
-      return distFolder
-    }
-  }
-  if (await canFolderUpload(currentDir)) {
-    return currentDir
-  }
-}
+// async function getDefaultProjectPath(): Promise<string | undefined> {
+// 	const distFolder = resolve(currentDir, 'dist')
+// 	if (await promisify(fs.exists)(distFolder)) {
+// 		if (await canFolderUpload(distFolder)) {
+// 			return distFolder
+// 		}
+// 	}
+// 	if (await canFolderUpload(currentDir)) {
+// 		return currentDir
+// 	}
+// }
 
 // 执行上传任务
 async function doUpload(args: UploadArgs) {
@@ -92,21 +94,27 @@ async function doUpload(args: UploadArgs) {
     await getCliPath()
   }
   if (!args.version) throw new Error('版本号必须')
-  const spawnArgs: string[] = ['upload', '-v', args.version, '--project', args.projectPath]
+  const spawnArgs: string[] = [
+    'upload',
+    '-v',
+    args.version,
+    '--project',
+    args.projectPath,
+  ]
   if (args.description) {
     spawnArgs.push(...['-d', args.description])
   }
-  // const outputPath = resolve(outputFolder, `mina_cli_output_${Math.random().toString(36).substr(2, 8)}.json`);
-  // spawnArgs.push(...["-i", outputPath]);
+  // const outputPath = resolve(outputFolder, `mina_cli_output_${Math.random().toString(36).substr(2, 8)}.json`)
+  // spawnArgs.push(...['-i', outputPath])
   console.debug(`${cliPath} ${spawnArgs.join(' ')}`)
   console.log(`正在上传${args.version}版本`)
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     const child = spawn(cliPath, spawnArgs, {
       cwd: cliCwd,
       stdio: 'inherit',
     })
 
-    child.on('close', code => {
+    child.on('close', (code) => {
       if (code) {
         reject(code)
       } else resolve()
@@ -122,7 +130,7 @@ async function getPkgInfo(folder: string): Promise<PackageInfo> {
       const pkg = require(packageJsonFile)
       return pkg as PackageInfo
     }
-  } catch (error) {}
+  } catch (error) { }
   return {}
 }
 
@@ -133,9 +141,12 @@ async function beforeRun(args: Args) {
   let desc = args.d
   let projectPath = args.p
   // 如果没有配置项目路径，则根据当前目录去上传，如果当前目录下有dist目录，则优先上传dist目录
-  projectPath = projectPath || (await getDefaultProjectPath())
+  projectPath = projectPath || currentDir
   if (!projectPath) {
     throw new Error('项目路径未提供')
+  }
+  if (!path.isAbsolute(projectPath)) {
+    projectPath = path.resolve(projectPath)
   }
   // 读取不到则去读取package.json文件
   if (!version || !desc) {
@@ -147,7 +158,10 @@ async function beforeRun(args: Args) {
       }
       // 版本描述
       if (!desc && (pkg.versionDesc || pkg.description)) {
-        desc = pkg.versionDesc || pkg.description || `${new Date().toLocaleTimeString()}@${version}`
+        desc =
+          pkg.versionDesc ||
+          pkg.description ||
+          `${new Date().toLocaleTimeString()}@${version}`
       }
     }
   }

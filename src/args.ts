@@ -1,4 +1,4 @@
-import minimist, { ParsedArgs } from 'minimist'
+import minimist, { type ParsedArgs } from 'minimist'
 
 const usageString = `usage:
 minat upload [-v 1.0.0] [-d description] [-p /path/to/project]
